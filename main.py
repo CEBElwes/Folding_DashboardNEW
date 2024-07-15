@@ -35,18 +35,34 @@ app.layout = html.Div([
 
 @app.callback(
     Output(component_id = "residual_selected", component_property = "options"),
-    [Input(component_id = "variants", component_property = "value")]
+    [Input(component_id = "gene_selected", component_property = "value")]
 )
+
+def update_dropdown_page3_2a(gene_selected):
+    dropdownlist = page3.set_dropdown_options_page3_2a(gene_selected)
+    return dropdownlist
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "options"),
-    [Input(component_id = "variants", component_property = "value")]
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value")]
 )
+
+def update_dropdown_page3_2b(gene_selected, residual_selected):
+    dropdownlist = page3.set_dropdown_options_page3_2b(gene_selected, residual_selected)
+    return dropdownlist
+   
 
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "options"),
-    [Input(component_id = "variants", component_property = "value")]
-)
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value"),
+     Input(component_id = "mutfrom_selected", component_property = "value")]
+)  
+
+def update_dropdown_page3_2c(gene_selected, residual_selected, mutfrom_selected):
+    dropdownlist = page3.set_dropdown_options_page3_2c(gene_selected, residual_selected, mutfrom_selected)
+    return dropdownlist
 
 @app.callback(
     Output(component_id = "gene_ddg", component_property = "figure"),
