@@ -14,12 +14,12 @@ import seaborn as sns
 app = Dash(__name__)
 
 ## Read in data
-ddg_info = pd.read_csv("/Users/clementineelwes/research/Folding_Dashboard/ddg_info.csv")
-gene_pdbs = pd.read_csv("/Users/clementineelwes/research/Folding_Dashboard/gene_pdbs.csv")
-
+ddg_info = pd.read_csv("ddg_infoTP53.csv")
+gene_pdbs = pd.read_csv("gene_pdbsTP53.csv")
 
 
 ### ----------------------
+
 # Layout
 layout = html.Div(children=[
     html.Br(),
@@ -41,29 +41,26 @@ layout = html.Div(children=[
                          searchable=True,
                          placeholder="Select a gene...",
                          clearable=True),
-            dcc.Store(id='pdb_values'), 
+            dcc.Store(id='pdb_values'),
             ## Gene graph
             dcc.Graph(id="gene_ddg"),
         ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
 
         html.Div([
             "Residue number: ",
-            dcc.Dropdown(options=[{'label': str(variant), 'value': variant} for variant in ddg_info['pdb_residual'].dropna().unique() if variant != 'pdb_residual_value'],
-                         id="residual_selected",
+            dcc.Dropdown(id="residual_selected",
                          searchable=True,
                          placeholder="Select residue number...",
                          clearable=True),
             "Mutation from: ",
             ## Dropdown for variants
-            dcc.Dropdown(options=[{'label': variant, 'value': variant} for variant in ddg_info['mut_from'].unique() if variant != 'mut_from_value'],
-                         id="mutfrom_selected",
+            dcc.Dropdown(id="mutfrom_selected",
                          searchable=True,
                          placeholder="Select mutation from...",
                          clearable=True),
             "Mutation to: ",
             ## Dropdown for variants
-            dcc.Dropdown(options=[{'label': variant, 'value': variant} for variant in ddg_info['mut_to'].unique() if variant != 'mut_to_value'],
-                         id="mutto_selected",
+            dcc.Dropdown(id="mutto_selected",
                          searchable=True,
                          placeholder="Select mutation to...",
                          clearable=True),
@@ -85,18 +82,40 @@ layout = html.Div(children=[
 
 @app.callback(
     Output(component_id="residual_selected", component_property="children"),
-    Input(component_id="variants", component_property="value")
+    Input(component_id="gene_selected", component_property="value")
 )
 
-@app.callback(
-    Output(component_id="mutfrom_selected", component_property="children"),
-    Input(component_id="variants", component_property="value")
-)
+def set_dropdown_options_page3_2a(gene_selected):
+    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
+    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
+    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values))]
+    return [{'label': str(variant), 'value': variant} for variant in filtered_ddg_info['pdb_residual'].unique() if variant != 'pdb_residual_value']
 
 @app.callback(
-    Output(component_id="mutto_selected", component_property="children"),
-    Input(component_id="variants", component_property="value")
+    Output(component_id = "mutfrom_selected", component_property = "children"),
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value")]
 )
+
+def set_dropdown_options_page3_2b(gene_selected, residual_selected):
+    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
+    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
+    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected)]
+    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info['mut_from'].unique() if variant != 'mut_from_value']
+
+@app.callback(
+    Output(component_id = "mutto_selected", component_property = "children"),
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value"),
+     Input(component_id = "mutfrom_selected", component_property = "value")]
+)
+
+def set_dropdown_options_page3_2c(gene_selected, residual_selected, mutfrom_selected):
+    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
+    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
+    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected)]
+    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info['mut_to'].unique() if variant != 'mut_to_value']
+ 
 
 
 ## Callback for ddg_for_gene
@@ -125,7 +144,7 @@ def ddg_for_gene_plot(gene_selected, pdb_values, residual_selected, mutfrom_sele
     else:
         median_ddg = None
 
-    figure = px.histogram(filtered_ddg_info, x='ddg', nbins=1000, title='Histogram of ddg values for selected gene')
+    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, title=f'Delta Delta G values for {gene_selected}', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
 
     # Add a vertical line at the median value
     if median_ddg:
@@ -148,7 +167,7 @@ def ddg_for_gene_plot(gene_selected, pdb_values, residual_selected, mutfrom_sele
             go.layout.Annotation(
                 x=median_ddg,
                 y=max(filtered_ddg_info['ddg'].value_counts()) / 2,
-                text=f'Median: {median_ddg:.2f}',
+                text=f'Median for selected variant: {median_ddg:.2f}',
                 showarrow=True,
                 arrowhead=2
             )
@@ -176,7 +195,7 @@ def ddg_for_variant_plot(ddg_info, pdb_values, residual_selected=None, mutfrom_s
     filtered_ddg_info_var = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
    
         # Create the histogram
-    figure = px.histogram(filtered_ddg_info_var, x='ddg', nbins=20, title='Histogram of ddg values for selected variant')
+    figure = px.histogram(filtered_ddg_info_var, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ddg values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
     return figure
 
 
