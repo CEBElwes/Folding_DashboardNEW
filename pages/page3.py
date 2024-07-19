@@ -38,6 +38,7 @@ layout = html.Div(children=[
             ## Dropdown for genes
             dcc.Dropdown(options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique() if gene != 'gene_name_value'],
                          id="gene_selected",
+                         value= "NOTCH1",
                          searchable=True,
                          placeholder="Select a gene...",
                          clearable=True),
@@ -70,7 +71,6 @@ layout = html.Div(children=[
         ], style={'width': '52%', 'display': 'inline-block', 'padding': 10})
     ], style={'display': 'flex'}),
 ])
-
 #-------------------------------------------
 ## Callbacks
 
