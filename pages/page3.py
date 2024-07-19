@@ -10,12 +10,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 import seaborn as sns
+import os
 
 app = Dash(__name__)
 
+# Define the path to the mounted directory
+mounted_dir = "/mnt/azurefile"
+
+# Read in data from the mounted Azure File Share
+ddg_info_path = os.path.join(mounted_dir, "ddg_infoNOTCH1.csv")
+gene_pdbs_path = os.path.join(mounted_dir, "gene_pdbsNOTCH1.csv")
+
 ## Read in data
-ddg_info = pd.read_csv("ddg_infoNOTCH1.csv")
-gene_pdbs = pd.read_csv("gene_pdbsNOTCH1.csv")
+ddg_info = pd.read_csv("ddg_info_path")
+gene_pdbs = pd.read_csv("gene_pdbs_path")
 
 
 ### ----------------------
@@ -165,9 +173,9 @@ def ddg_for_gene_plot(gene_selected, pdb_values, residual_selected, mutfrom_sele
         )
         figure.add_annotation(
             go.layout.Annotation(
-                x=median_ddg,
-                y=max(filtered_ddg_info['ddg'].value_counts()) / 2,
-                text=f'Median for selected variant: {median_ddg:.2f}',
+                x=median_ddg,y=1,
+                xref="x", yref="paper",
+                text=f'Variant median: {median_ddg:.2f}',
                 showarrow=True,
                 arrowhead=2
             )
