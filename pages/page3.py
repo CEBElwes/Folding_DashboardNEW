@@ -10,20 +10,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 import seaborn as sns
-import os
+
 
 app = Dash(__name__)
 
-# Define the path to the mounted directory
-mounted_dir = "/mnt/azurefile"
-
-# Read in data from the mounted Azure File Share
-ddg_info_path = os.path.join(mounted_dir, "ddg_infoNOTCH1.csv")
-gene_pdbs_path = os.path.join(mounted_dir, "gene_pdbsNOTCH1.csv")
-
 ## Read in data
-ddg_info = pd.read_csv("ddg_info_path")
-gene_pdbs = pd.read_csv("gene_pdbs_path")
+ddg_info = pd.read_csv("ddg_info.csv")
+gene_pdbs = pd.read_csv("gene_pdbs.csv")
 
 
 ### ----------------------
