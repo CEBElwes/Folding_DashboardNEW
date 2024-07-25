@@ -1,18 +1,43 @@
+# Start from the base Python image
 FROM python:3.10
 
+# Install OpenSSH server
+RUN apt-get update && apt-get install -y openssh-server
+
+# Create a directory for the SSH daemon to run
+RUN mkdir /var/run/sshd
+
+# Set the root password (change this to a more secure password)
+RUN echo 'root:password' | chpasswd
+
+# Allow root login by modifying the SSH config file
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Disable strict host key checking
+RUN mkdir -p /root/.ssh && echo "Host *\n\tStrictHostKeyChecking no\n" > /root/.ssh/config
+
+# Expose port 22 for SSH
+EXPOSE 22
+
+# Install other dependencies
 RUN pip install --upgrade pip
-# Create a directory where the code is to be hosted
+
+# Create a directory for the application
 RUN mkdir /app
-# Define the working directory in the container
-WORKDIR /app 
-# Copy and install the requirements.
+
+# Set the working directory
+WORKDIR /app
+
+# Copy and install the requirements
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
-# Copy application code to the image
+
+# Copy the application code to the image
 COPY . /app/
 
 # Define environment variables
 ENV dash_port=80
 ENV dash_debug="False"
 
-CMD ["python", "main.py"]
+# Start the SSH service and the application
+CMD ["/bin/bash", "-c", "service ssh start; python main.py"]
