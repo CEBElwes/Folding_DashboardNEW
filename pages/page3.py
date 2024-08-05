@@ -30,43 +30,57 @@ layout = html.Div(children=[
         Here you can explore the (mis)folding energies.
     '''),
 
-
     html.Div([
-
         # Graph container
         html.Div([
-            "Gene: ",
-            ## Dropdown for genes
-            dcc.Dropdown(options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique() if gene != 'gene_name_value'],
-                         id="gene_selected",
-                         value= "NOTCH1",
-                         searchable=True,
-                         placeholder="Select a gene...",
-                         clearable=True),
+            html.Div([
+                "Gene: ",
+                ## Dropdown for genes
+                dcc.Dropdown(options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique() if gene != 'gene_name_value'],
+                             id="gene_selected",
+                             value="NOTCH1",
+                             searchable=True,
+                             placeholder="Select a gene...",
+                             clearable=True),
+            ], style={'padding': 5}),
             dcc.Store(id='pdb_values'),
             ## Gene graph
             dcc.Graph(id="gene_ddg"),
+            ## Markdown below the gene graph
+            dcc.Markdown(
+                id='gene_ddg_markdown', 
+                style={'width': '100%', 'height': 100, 'white-space': 'pre-line'},
+            ),
         ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
 
+
         html.Div([
-            "Residue number: ",
-            dcc.Dropdown(id="residual_selected",
-                         searchable=True,
-                         placeholder="Select residue number...",
-                         clearable=True),
-            "Mutation from: ",
-            ## Dropdown for variants
-            dcc.Dropdown(id="mutfrom_selected",
-                         searchable=True,
-                         placeholder="Select mutation from...",
-                         clearable=True),
-            "Mutation to: ",
-            ## Dropdown for variants
-            dcc.Dropdown(id="mutto_selected",
-                         searchable=True,
-                         placeholder="Select mutation to...",
-                         clearable=True),
-            
+            html.Div([
+                html.Div([
+                    "Residue number: ",
+                    dcc.Dropdown(id="residual_selected",
+                                 value = 293,
+                                 searchable=True,
+                                 placeholder="Select residue number...",
+                                 clearable=True),
+                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
+                html.Div([
+                    "Mutation from: ",
+                    dcc.Dropdown(id="mutfrom_selected",
+                                 searchable=True,
+                                 placeholder="Select mutation from...",
+                                 clearable=True),
+                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
+                html.Div([
+                    "Mutation to: ",
+                    dcc.Dropdown(id="mutto_selected",
+                                 searchable=True,
+                                 placeholder="Select mutation to...",
+                                 clearable=True),
+                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
+            ], style={'display': 'flex', 'justify-content': 'space-between', 'width': '100%'}),
+            dcc.Store(id='filtered_ddg_info'),
+            dcc.Store(id='median_ddg'),
             ## Variant graph
             dcc.Graph(id="variant_ddg"),
         ], style={'width': '52%', 'display': 'inline-block', 'padding': 10})
@@ -101,8 +115,8 @@ def set_dropdown_options_page3_2a(gene_selected):
 def set_dropdown_options_page3_2b(gene_selected, residual_selected):
     filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
     pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected)]
-    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info['mut_from'].unique() if variant != 'mut_from_value']
+    filtered_ddg_info_var1 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected)]
+    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info_var1['mut_from'].unique() if variant != 'mut_from_value']
 
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "children"),
@@ -114,8 +128,8 @@ def set_dropdown_options_page3_2b(gene_selected, residual_selected):
 def set_dropdown_options_page3_2c(gene_selected, residual_selected, mutfrom_selected):
     filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
     pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected)]
-    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info['mut_to'].unique() if variant != 'mut_to_value']
+    filtered_ddg_info_var2 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected)]
+    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info_var2['mut_to'].unique() if variant != 'mut_to_value']
  
 
 
@@ -134,16 +148,19 @@ def get_pdb_values(gene_pdbs, gene_selected):
     pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
     return pdb_values
 
-def ddg_for_gene_plot(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-  
-    filtered_ddg_info = ddg_info[ddg_info['pdb'].isin(pdb_values)]
-    
-    # Calculate median of the variant histogram
+# Calculate median of the variant histogram
+
+def calculate_median (pdb_values,residual_selected, mutfrom_selected, mutto_selected):
     if mutfrom_selected and mutto_selected:
-        filtered_ddg_info_var = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
-        median_ddg = filtered_ddg_info_var['ddg'].median()
+        filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
+        median_ddg = filtered_ddg_info_var3['ddg'].median()
     else:
         median_ddg = None
+    return median_ddg
+
+def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
+  
+    filtered_ddg_info = ddg_info[ddg_info['pdb'].isin(pdb_values)]
 
     figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, title=f'Delta Delta G values for {gene_selected}', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
 
@@ -186,20 +203,41 @@ def ddg_for_gene_plot(gene_selected, pdb_values, residual_selected, mutfrom_sele
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
 
-def get_pdb_values(gene_pdbs, gene_selected):
-    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
-    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    return pdb_values
-
 def ddg_for_variant_plot(ddg_info, pdb_values, residual_selected=None, mutfrom_selected=None, mutto_selected=None):
     # Apply the initial filter based on pdb values
-    filtered_ddg_info_var = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
+    filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
    
         # Create the histogram
-    figure = px.histogram(filtered_ddg_info_var, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ddg values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(filtered_ddg_info_var3, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ddg values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
     return figure
 
+##Callback for markdown text
+@app.callback(
+    Output(component_id = "gene_ddg_markdown", component_property = "children"),
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "pdb_values", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value"),
+     Input(component_id = "mutfrom_selected", component_property = "value"),
+     Input(component_id = "mutto_selected", component_property = "value"),]
+)
+def calculate_percentile(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected):
+    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
+    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
+    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values))]
+    values = filtered_ddg_info['ddg'].values
+    filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
+    median_ddg = filtered_ddg_info_var3['ddg'].median()
+    percentile = np.sum(values < median_ddg) / len(values) * 100
+    return percentile
 
+def gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected, median_ddg):
+    percentile = calculate_percentile(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
+    if median_ddg > 2.5:
+        return f'Median ΔΔG for selected variant is in the {percentile:.2f} percentile. It is greater than the deleterious value and destabilizing.'
+    elif median_ddg > 0.5:
+        return f'Median ΔΔG for selected variant is in the {percentile:.2f} percentile. It is greater than the Serrano value of 0.5.'
+    else:
+        return f'Median ΔΔG for selected variant is in the {percentile:.2f} percentile. It is not destabilizing.'
 
 
 if __name__ == '__main__':
