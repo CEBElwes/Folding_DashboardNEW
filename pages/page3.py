@@ -5,7 +5,8 @@ from dash.exceptions import PreventUpdate
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-
+import sqlite3 as sql
+from sqlite3 import Error
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
@@ -14,20 +15,19 @@ import seaborn as sns
 
 app = Dash(__name__)
 
-## Read in data
 ddg_info = pd.read_csv("ddg_info.csv")
 gene_pdbs = pd.read_csv("gene_pdbs.csv")
-
+pdb_residual = pd.read_csv("/Users/clementineelwes/research/Folding_Dashboard/Misc_files/pdb_residual")
 
 ### ----------------------
 
 # Layout
 layout = html.Div(children=[
     html.Br(),
-    html.H1(children='Folding Energies for Genes and Variants'),
+    html.H1(children='Folding Energies'),
 
     html.Div(children='''
-        Here you can explore the (mis)folding energies.
+        Xxx.
     '''),
 
     html.Div([
@@ -100,10 +100,11 @@ layout = html.Div(children=[
 )
 
 def set_dropdown_options_page3_2a(gene_selected):
-    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
-    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values))]
-    return [{'label': str(variant), 'value': variant} for variant in filtered_ddg_info['pdb_residual'].unique() if variant != 'pdb_residual_value']
+    if gene_selected:
+        pdb_residual_values = pdb_residual[gene_selected].dropna().astype(int).tolist()
+        return [{'label': str(residual), 'value': residual} for residual in pdb_residual_values]
+    return []
+
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "children"),
@@ -161,7 +162,7 @@ def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
   
     filtered_ddg_info = ddg_info[ddg_info['pdb'].isin(pdb_values)]
 
-    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, title=f'Delta Delta G values for {gene_selected}', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, title=f'ΔΔG values for {gene_selected}', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
 
     # Add a vertical line at the median value
     if median_ddg:
@@ -207,7 +208,7 @@ def ddg_for_variant_plot(ddg_info, pdb_values, residual_selected=None, mutfrom_s
     filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
    
         # Create the histogram
-    figure = px.histogram(filtered_ddg_info_var3, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ddg values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(filtered_ddg_info_var3, x='ddg', range_x=[-10, 100], nbins=20, title='ΔΔG values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
     return figure
 
 ##Callback for markdown text
