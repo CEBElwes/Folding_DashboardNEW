@@ -15,9 +15,9 @@ import seaborn as sns
 
 app = Dash(__name__)
 
-ddg_info = pd.read_csv("ddg_info.csv")
-gene_pdbs = pd.read_csv("gene_pdbs.csv")
-pdb_residual = pd.read_csv("/Users/clementineelwes/research/Folding_Dashboard/Misc_files/pdb_residual")
+ddg_info = pd.read_csv("mnt/ddg_info.csv")
+gene_pdbs = pd.read_csv("mnt/gene_pdbs.csv")
+pdb_residual = pd.read_csv("mnt/pdb_residual")
 
 ### ----------------------
 
