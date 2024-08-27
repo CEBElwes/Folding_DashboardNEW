@@ -25,7 +25,7 @@ app.layout = html.Div([
     html.Div(id='page-content', children=[]),
 ])
 
-## Callbacks for page 3
+## Callbacks for page 1
 
 ## Callbacks for dropdowns
 @app.callback(
