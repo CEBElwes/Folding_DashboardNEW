@@ -15,8 +15,8 @@ import seaborn as sns
 
 app = Dash(__name__)
 
-ddg_info = pd.read_csv("/mount/ddg_info.csv")
-gene_pdbs = pd.read_csv("/mount/gene_pdbs.csv")
+ddg_info = pd.read_csv("ddg_info.csv")
+gene_pdbs = pd.read_csv("gene_pdbs.csv")
 pdb_residual = pd.read_csv("/mount/pdb_residual")
 
 ### ----------------------
@@ -38,7 +38,6 @@ layout = html.Div(children=[
                 ## Dropdown for genes
                 dcc.Dropdown(options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique() if gene != 'gene_name_value'],
                              id="gene_selected",
-                             value="NOTCH1",
                              searchable=True,
                              placeholder="Select a gene...",
                              clearable=True),
