@@ -15,9 +15,9 @@ import seaborn as sns
 
 app = Dash(__name__)
 
-ddg_info = pd.read_csv("ddg_infoNOTCH1.csv")
-gene_pdbs = pd.read_csv("gene_pdbsNOTCH1.csv")
-pdb_residual = pd.read_csv("/mount/pdb_residual")
+ddg_info = pd.read_csv("/mount/ddg_infoCOMPRESSED")
+gene_pdbs = pd.read_csv("gene_pdbs")
+pdb_residual = pd.read_csv("pdb_residual")
 
 ### ----------------------
 
@@ -155,14 +155,14 @@ def calculate_median (pdb_values,residual_selected, mutfrom_selected, mutto_sele
         median_ddg = None
     return median_ddg
 
-def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
-  
+def ddg_for_gene_plot(ddg_info, pdb_values, median_ddg):
     filtered_ddg_info = ddg_info[ddg_info['pdb'].isin(pdb_values)]
 
-    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, title=f'Histogram of ΔΔG values for selected gene', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, 
+                         title='Histogram of ΔΔG values for selected gene', 
+                         labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
 
-    # Add a vertical line at the median value
-    if median_ddg:
+    if median_ddg is not None:
         figure.add_shape(
             go.layout.Shape(
                 type="line",
@@ -180,8 +180,10 @@ def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
         )
         figure.add_annotation(
             go.layout.Annotation(
-                x=median_ddg,y=1,
-                xref="x", yref="paper",
+                x=median_ddg,
+                y=1,
+                xref="x", 
+                yref="paper",
                 text=f'Variant median: {median_ddg:.2f} kcal/mol',
                 showarrow=True,
                 arrowhead=2
