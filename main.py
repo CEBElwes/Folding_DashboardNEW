@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output
 from app import app
 
 # Connect to your app pages
-from pages import page3
+from pages import page1
 
 # Connect the navbar to the index
 from components import navbar
@@ -38,8 +38,8 @@ app.layout = html.Div([
     [Input(component_id = "gene_selected", component_property = "value")]
 )
 
-def update_dropdown_page3_2a(gene_selected):
-    dropdownlist = page3.set_dropdown_options_page3_2a(gene_selected)
+def update_dropdown_page1_2a(gene_selected):
+    dropdownlist = page1.set_dropdown_options_page1_2a(gene_selected)
     return dropdownlist
 
 @app.callback(
@@ -48,8 +48,8 @@ def update_dropdown_page3_2a(gene_selected):
      Input(component_id = "residual_selected", component_property = "value")]
 )
 
-def update_dropdown_page3_2b(gene_selected, residual_selected):
-    dropdownlist = page3.set_dropdown_options_page3_2b(gene_selected, residual_selected)
+def update_dropdown_page1_2b(gene_selected, residual_selected):
+    dropdownlist = page1.set_dropdown_options_page1_2b(gene_selected, residual_selected)
     return dropdownlist
    
 
@@ -60,8 +60,8 @@ def update_dropdown_page3_2b(gene_selected, residual_selected):
      Input(component_id = "mutfrom_selected", component_property = "value")]
 )  
 
-def update_dropdown_page3_2c(gene_selected, residual_selected, mutfrom_selected):
-    dropdownlist = page3.set_dropdown_options_page3_2c(gene_selected, residual_selected, mutfrom_selected)
+def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected):
+    dropdownlist = page1.set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected)
     return dropdownlist
 
 @app.callback(
@@ -73,11 +73,11 @@ def update_dropdown_page3_2c(gene_selected, residual_selected, mutfrom_selected)
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
 def update_graph6(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page3.gene_pdbs  
-    ddg_info = page3.ddg_info    
-    pdb_values = page3.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page3.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    figure = page3.ddg_for_gene_plot(page3.ddg_info, pdb_values, median_ddg)
+    gene_pdbs = page1.gene_pdbs  
+    ddg_info = page1.ddg_info    
+    pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
+    median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
+    figure = page1.ddg_for_gene_plot(page1.ddg_info, pdb_values, median_ddg)
     return figure
 
 ## Callback for ddg by variant
@@ -90,10 +90,10 @@ def update_graph6(gene_selected, pdb_values, residual_selected, mutfrom_selected
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
 def update_graph7(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page3.gene_pdbs  
-    ddg_info = page3.ddg_info    
-    pdb_values = page3.get_pdb_values(gene_pdbs, gene_selected)
-    figure = page3.ddg_for_variant_plot(page3.ddg_info, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    gene_pdbs = page1.gene_pdbs  
+    ddg_info = page1.ddg_info    
+    pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
+    figure = page1.ddg_for_variant_plot(page1.ddg_info, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
     return figure
 
 ##Callback for markdown text
@@ -107,12 +107,12 @@ def update_graph7(gene_selected, pdb_values, residual_selected, mutfrom_selected
 )
 
 def update_markdown(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page3.gene_pdbs
-    ddg_info = page3.ddg_info
-    pdb_values = page3.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page3.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page3.calculate_percentile(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
-    text = page3.gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
+    gene_pdbs = page1.gene_pdbs
+    ddg_info = page1.ddg_info
+    pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
+    median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
+    text = page1.gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
     return text
 
 
@@ -122,8 +122,8 @@ def update_markdown(gene_selected, pdb_values, residual_selected, mutfrom_select
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/page3':
-        return page3.layout
+    if pathname == '/' or pathname == '/page1':
+        return page1.layout
     else:  # if redirected to unknown link
         return "404 Page Error! Please choose a link"
 
