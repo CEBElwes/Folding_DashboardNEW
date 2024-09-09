@@ -16,7 +16,7 @@ import seaborn as sns
 app = Dash(__name__)
 
 ddg_info = pd.read_csv("ddg_infoNOTCH1.csv")
-gene_pdbs = pd.read_csv("gene_pdbs")
+gene_pdbs = pd.read_csv("/mount/gene_pdbs")
 pdb_residual = pd.read_csv("pdb_residual")
 
 ### ----------------------
