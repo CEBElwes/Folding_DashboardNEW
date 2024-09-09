@@ -8,7 +8,7 @@ def Navbar():
     layout = html.Div([
         dbc.NavbarSimple(
             children=[
-                dbc.NavItem(dbc.NavLink("Folding Dashboard", href="/page3")),
+                dbc.NavItem(dbc.NavLink("Folding Dashboard", href="/page1")),
             ] ,
             brand="Folding DashBoard",
             brand_href="/page1",
