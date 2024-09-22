@@ -50,26 +50,24 @@ def update_dropdown_page1_2a(gene_selected):
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "options"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
+    [Input(component_id = "gene_selected", component_property = "value"),
      Input(component_id = "residual_selected", component_property = "value")]
 )
 
-def update_dropdown_page1_2b(ddg_info_store, gene_selected, residual_selected):
-    dropdownlist = page1.set_dropdown_options_page1_2b(ddg_info_store, gene_selected, residual_selected)
+def update_dropdown_page1_2b(gene_selected, residual_selected):
+    dropdownlist = page1.set_dropdown_options_page1_2b(gene_selected, residual_selected)
     return dropdownlist
    
 
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "options"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
+    [Input(component_id = "gene_selected", component_property = "value"),
      Input(component_id = "residual_selected", component_property = "value"),
      Input(component_id = "mutfrom_selected", component_property = "value")]
 )  
 
-def update_dropdown_page1_2c(ddg_info_store, gene_selected, residual_selected, mutfrom_selected):
-    dropdownlist = page1.set_dropdown_options_page1_2c(ddg_info_store, gene_selected, residual_selected, mutfrom_selected)
+def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected):
+    dropdownlist = page1.set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected)
     return dropdownlist
 
 @app.callback(
@@ -119,7 +117,7 @@ def update_markdown(ddg_info_store, gene_selected, pdb_values, residual_selected
     gene_pdbs = page1.gene_pdbs
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page1.calculate_percentile(gene_pdbs, gene_selected, ddg_info_store, residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected)
     text = page1.gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info_store, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
     return text
 

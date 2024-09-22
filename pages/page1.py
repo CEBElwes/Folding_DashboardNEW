@@ -19,6 +19,8 @@ app = Dash(__name__)
 gene_pdbs = pd.read_csv("gene_pdbs")
 pdb_residual = pd.read_csv("pdb_residual")
 gene_names = pd.read_csv("gene_names_list.csv")  # This file contains gene-to-ddg_info filename mapping
+mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv")
+mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv")
 
 # Layout
 layout = html.Div(children=[
@@ -127,32 +129,30 @@ def set_dropdown_options_page1_2a(gene_selected):
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "children"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
+    [Input(component_id = "gene_selected", component_property = "value"),
      Input(component_id = "residual_selected", component_property = "value")]
 )
 
-def set_dropdown_options_page1_2b(ddg_info_store, gene_selected, residual_selected):
-    ddg_info = pd.DataFrame(ddg_info_store) # Convert stored data back to a DataFrame
-    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
-    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    filtered_ddg_info_var1 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected)]
-    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info_var1['mut_from'].unique() if variant != 'mut_from_value']
-
+def set_dropdown_options_page1_2b(gene_selected,residual_selected):
+    if gene_selected and residual_selected:
+        column = f"{gene_selected}-{residual_selected}"
+        mutfrom_values = mutfrom_options[column].dropna().tolist()
+        return [{'label': str(mutfrom), 'value': mutfrom} for mutfrom in mutfrom_values]
+    return []
+        
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "children"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
+    [Input(component_id = "gene_selected", component_property = "value"),
      Input(component_id = "residual_selected", component_property = "value"),
      Input(component_id = "mutfrom_selected", component_property = "value")]
 )
 
-def set_dropdown_options_page1_2c(ddg_info_store, gene_selected, residual_selected, mutfrom_selected):
-    ddg_info = pd.DataFrame(ddg_info_store)
-    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
-    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
-    filtered_ddg_info_var2 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected)]
-    return [{'label': variant, 'value': variant} for variant in filtered_ddg_info_var2['mut_to'].unique() if variant != 'mut_to_value']
+def set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected):
+    if gene_selected and residual_selected and mutfrom_selected:
+        column = f"{gene_selected}-{residual_selected}-{mutfrom_selected}"
+        mutto_values = mutto_options[column].dropna().tolist()
+        return [{'label': str(mutto), 'value': mutto} for mutto in mutto_values]
+    return []
 
 ## Callback for ddg_for_gene
 @app.callback(
@@ -262,7 +262,7 @@ def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_sele
 
 def gene_ddg_markdown_text(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected, median_ddg):
     ddg_info = pd.DataFrame(ddg_info_store)
-    percentile = calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
+    percentile = calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected)
     
     Serrano = "[Serrano](https://www.crg.eu/luis_serrano)"
     Hall = "[Hall, Shorthouse, Alcraft et al. 2023](https://www.nature.com/articles/s42003-023-05136-y)"
