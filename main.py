@@ -83,10 +83,9 @@ def update_dropdown_page1_2c(ddg_info_store, gene_selected, residual_selected, m
 )
 def update_graph6(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     gene_pdbs = page1.gene_pdbs  
-    ddg_info = page1.load_ddg_info(gene_selected)    
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page1.calculate_median(ddg_info, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    figure = page1.ddg_for_gene_plot(ddg_info, pdb_values, median_ddg)
+    median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
+    figure = page1.ddg_for_gene_plot(ddg_info_store, pdb_values, median_ddg)
     return figure
 
 ## Callback for ddg by variant
@@ -101,9 +100,8 @@ def update_graph6(ddg_info_store, gene_selected, pdb_values, residual_selected, 
 )
 def update_graph7(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     gene_pdbs = page1.gene_pdbs  
-    ddg_info = page1.load_ddg_info(gene_selected) 
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    figure = page1.ddg_for_variant_plot(ddg_info, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    figure = page1.ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
     return figure
 
 ##Callback for markdown text
@@ -119,12 +117,13 @@ def update_graph7(ddg_info_store, gene_selected, pdb_values, residual_selected, 
 
 def update_markdown(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     gene_pdbs = page1.gene_pdbs
-    ddg_info = page1.load_ddg_info(gene_selected) 
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page1.calculate_median(ddg_info, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page1.calculate_percentile(ddg_info, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
-    text = page1.gene_ddg_markdown_text(ddg_info, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
+    median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(gene_pdbs, gene_selected, ddg_info_store, residual_selected, mutfrom_selected, mutto_selected)
+    text = page1.gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info_store, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
     return text
+
+
 
 
 

@@ -44,7 +44,11 @@ layout = html.Div(children=[
             ], style={'padding': 5}),
             dcc.Store(id='ddg_info_store'),  # Store for dynamically loaded ddg_info
             dcc.Store(id='pdb_values'),
-            dcc.Graph(id="gene_ddg"),
+            dcc.Loading(
+                id="loading-gene-ddg",
+                type="default",
+                children=dcc.Graph(id="gene_ddg"),
+            ),
         ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
 
         html.Div([
@@ -64,7 +68,11 @@ layout = html.Div(children=[
             ], style={'display': 'flex', 'justify-content': 'space-between', 'width': '100%'}),
             dcc.Store(id='filtered_ddg_info'),
             dcc.Store(id='median_ddg'),
-            dcc.Graph(id="variant_ddg"),
+            dcc.Loading(
+                id="loading_variant_ddg",
+                type="default",
+                children=dcc.Graph(id="variant_ddg"),
+            ),
         ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
     ], style={'display': 'flex', 'justify-content': 'space-between'}),
     # Full width Markdown text
@@ -241,7 +249,7 @@ def ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected=None, mut
      Input(component_id = "mutfrom_selected", component_property = "value"),
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
-def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected):
+def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected):
     ddg_info = pd.DataFrame(ddg_info_store)
     filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
     pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
@@ -252,7 +260,7 @@ def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, ddg_info, res
     percentile = np.sum(values < median_ddg) / len(values) * 100
     return percentile
 
-def gene_ddg_markdown_text(ddg_info_store, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected, median_ddg):
+def gene_ddg_markdown_text(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected, median_ddg):
     ddg_info = pd.DataFrame(ddg_info_store)
     percentile = calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, ddg_info, residual_selected, mutfrom_selected, mutto_selected)
     
