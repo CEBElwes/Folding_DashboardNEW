@@ -16,7 +16,7 @@ import seaborn as sns
 app = Dash(__name__)
 
 # Load static data files
-gene_pdbs = pd.read_csv("gene_pdbs")
+gene_pdbs = pd.read_csv("gene_pdbs.csv")
 pdb_residual = pd.read_csv("pdb_residual")
 gene_names = pd.read_csv("gene_names_list.csv")  # This file contains gene-to-ddg_info filename mapping
 mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv")
