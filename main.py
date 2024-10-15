@@ -115,7 +115,7 @@ def update_graph2(ddg_info_store, gene_selected, pdb_values, residual_selected, 
      Input(component_id = "percentile", component_property = "value"),]
 )
 
-def update_markdown(gene_selected, ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected, median_ddg, percentile):
+def update_markdown(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected, median_ddg, percentile):
     gene_pdbs = page1.gene_pdbs  
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
