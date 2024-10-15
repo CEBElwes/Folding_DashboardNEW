@@ -16,7 +16,7 @@ import seaborn as sns
 app = Dash(__name__)
 
 # Load static data files
-gene_pdbs = pd.read_csv("gene_pdbs.csv")
+gene_pdbs = pd.read_csv("gene_pdbs")
 pdb_residual = pd.read_csv("pdb_residual")
 gene_names = pd.read_csv("gene_names_list.csv")  # This file contains gene-to-ddg_info filename mapping
 mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv")
@@ -70,6 +70,7 @@ layout = html.Div(children=[
             ], style={'display': 'flex', 'justify-content': 'space-between', 'width': '100%'}),
             dcc.Store(id='filtered_ddg_info'),
             dcc.Store(id='median_ddg'),
+            dcc.Store(id='percentile'),
             dcc.Loading(
                 id="loading_variant_ddg",
                 type="default",
@@ -172,7 +173,7 @@ def get_pdb_values(gene_pdbs, gene_selected):
 
 # Calculate median of the variant histogram
 
-def calculate_median (ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected):
+def calculate_median (ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     ddg_info = pd.DataFrame(ddg_info_store)
     if mutfrom_selected and mutto_selected:
         filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
@@ -249,10 +250,8 @@ def ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected=None, mut
      Input(component_id = "mutfrom_selected", component_property = "value"),
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
-def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected):
+def calculate_percentile(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     ddg_info = pd.DataFrame(ddg_info_store)
-    filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
-    pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
     filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values))]
     values = filtered_ddg_info['ddg'].values
     filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
@@ -260,9 +259,7 @@ def calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_sele
     percentile = np.sum(values < median_ddg) / len(values) * 100
     return percentile
 
-def gene_ddg_markdown_text(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected, median_ddg):
-    ddg_info = pd.DataFrame(ddg_info_store)
-    percentile = calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected)
+def gene_ddg_markdown_text(median_ddg, percentile):
     
     Serrano = "[Serrano](https://www.crg.eu/luis_serrano)"
     Hall = "[Hall, Shorthouse, Alcraft et al. 2023](https://www.nature.com/articles/s42003-023-05136-y)"

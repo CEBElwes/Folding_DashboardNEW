@@ -79,7 +79,7 @@ def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected)
      Input(component_id = "mutfrom_selected", component_property = "value"),
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
-def update_graph6(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
+def update_graph1(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     gene_pdbs = page1.gene_pdbs  
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
@@ -96,7 +96,7 @@ def update_graph6(ddg_info_store, gene_selected, pdb_values, residual_selected, 
      Input(component_id = "mutfrom_selected", component_property = "value"),
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
-def update_graph7(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
+def update_graph2(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     gene_pdbs = page1.gene_pdbs  
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     figure = page1.ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
@@ -110,19 +110,18 @@ def update_graph7(ddg_info_store, gene_selected, pdb_values, residual_selected, 
      Input(component_id = "pdb_values", component_property = "value"),
      Input(component_id = "residual_selected", component_property = "value"),
      Input(component_id = "mutfrom_selected", component_property = "value"),
-     Input(component_id = "mutto_selected", component_property = "value"),]
+     Input(component_id = "mutto_selected", component_property = "value"),
+     Input(component_id = "median_ddg", component_property = "value"),
+     Input(component_id = "percentile", component_property = "value"),]
 )
 
-def update_markdown(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page1.gene_pdbs
+def update_markdown(gene_selected, ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected, median_ddg, percentile):
+    gene_pdbs = page1.gene_pdbs  
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page1.calculate_percentile(ddg_info_store, gene_pdbs, gene_selected, residual_selected, mutfrom_selected, mutto_selected)
-    text = page1.gene_ddg_markdown_text(gene_pdbs, gene_selected, ddg_info_store, residual_selected, mutfrom_selected, mutto_selected, median_ddg)
+    median_ddg = page1.calculate_median(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    text = page1.gene_ddg_markdown_text(median_ddg, percentile)
     return text
-
-
-
 
 
 
