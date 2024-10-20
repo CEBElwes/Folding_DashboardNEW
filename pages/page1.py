@@ -13,14 +13,15 @@ import matplotlib
 import seaborn as sns
 
 
+
 app = Dash(__name__)
 
 # Load static data files
 gene_pdbs = pd.read_csv("gene_pdbs")
 pdb_residual = pd.read_csv("pdb_residual")
 gene_names = pd.read_csv("gene_names_list.csv")  # This file contains gene-to-ddg_info filename mapping
-mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv")
-mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv")
+mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv", dtype=str)
+mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv", dtype=str)
 
 # Layout
 layout = html.Div(children=[
@@ -104,16 +105,20 @@ def load_ddg_info(gene_selected):
     else:
         # Find the column in gene_names where the gene_selected is located
         matching_columns = gene_names.columns[gene_names.eq(gene_selected).any()]
-
-        # Use the column name (e.g., 'ddg_info1') to determine the filename
-        ddg_info_column = matching_columns[0]
-        file_path = f"{ddg_info_column}.csv"  # Construct the filename based on the column name
-
-        # Read the ddG information from the file
-        ddg_info = pd.read_csv(file_path)
         
-        # Convert the DataFrame to a dictionary for storage in dcc.Store
-        return ddg_info.to_dict('records')
+        if not matching_columns.empty:
+
+            # Use the column name (e.g., 'ddg_info1') to determine the filename
+            ddg_info_column = matching_columns[0]
+            file_path = f"{ddg_info_column}.csv"  # Construct the filename based on the column name
+
+            # Read the ddG information from the file
+            ddg_info = pd.read_csv(file_path)
+        
+            # Convert the DataFrame to a dictionary for storage in dcc.Store
+            return ddg_info.to_dict('records')
+        
+        return None
 
 
 @app.callback(
@@ -183,6 +188,10 @@ def calculate_median (ddg_info_store, pdb_values, residual_selected, mutfrom_sel
     return median_ddg
 
 def ddg_for_gene_plot(ddg_info_store, pdb_values, median_ddg):
+    
+    if not ddg_info_store or len(ddg_info_store) == 0:
+        return go.Figure()
+    
     ddg_info = pd.DataFrame(ddg_info_store)
     filtered_ddg_info = ddg_info[ddg_info['pdb'].isin(pdb_values)]
 
@@ -232,6 +241,8 @@ def ddg_for_gene_plot(ddg_info_store, pdb_values, median_ddg):
 )
 
 def ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected=None, mutfrom_selected=None, mutto_selected=None):
+    if not ddg_info_store or len(ddg_info_store) == 0:
+        return go.Figure()
     ddg_info = pd.DataFrame(ddg_info_store)
     # Apply the initial filter based on pdb values
     filtered_ddg_info_var3 = ddg_info[(ddg_info['pdb'].isin(pdb_values)) & (ddg_info['pdb_residual'] == residual_selected) & (ddg_info['mut_from'] == mutfrom_selected) & (ddg_info['mut_to'] == mutto_selected)]
@@ -239,6 +250,7 @@ def ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected=None, mut
         # Create the histogram
     figure = px.histogram(filtered_ddg_info_var3, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ΔΔG values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
     return figure
+
 
 ##Callback for markdown text
 @app.callback(
@@ -251,6 +263,8 @@ def ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected=None, mut
      Input(component_id = "mutto_selected", component_property = "value"),]
 )
 def calculate_percentile(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
+    if not ddg_info_store:
+        return None
     ddg_info = pd.DataFrame(ddg_info_store)
     filtered_ddg_info = ddg_info[(ddg_info['pdb'].isin(pdb_values))]
     values = filtered_ddg_info['ddg'].values
