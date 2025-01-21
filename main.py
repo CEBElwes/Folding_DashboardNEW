@@ -27,6 +27,15 @@ app.layout = html.Div([
 
 ## CALLBACKS FOR PAGE 1
 
+# Callback to load the appropriate ddg_info file based on gene selection
+@app.callback(
+    Output('ddg_info_store', 'data'),
+    Input('gene_selected', 'value')
+)
+
+def update_ddg_info(gene_selected):
+    ddg_info = page1.load_ddg_info(gene_selected)
+    return ddg_info
 
 ## Callbacks for dropdowns
 
