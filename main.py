@@ -3,6 +3,7 @@
 # Import necessary libraries
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
+import plotly.graph_objects as go
 
 # Connect to main app.py file
 from app import app
@@ -36,23 +37,23 @@ def update_dropdown_page1_2a(gene_selected):
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "options"),
-    [Input(component_id = "residual_selected", component_property = "value")],
-    [State(component_id = "gene_selected", component_property = "value")],
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value")],
     prevent_initial_call=True,
 )
-def update_dropdown_page1_2b(residual_selected, gene_selected):
+def update_dropdown_page1_2b(gene_selected, residual_selected):
     dropdownlist = page1.set_dropdown_options_page1_2b(gene_selected, residual_selected)
     return dropdownlist
 
 
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "options"),
-    [Input(component_id = "mutfrom_selected", component_property = "value")],
-    [State(component_id = "gene_selected", component_property = "value"),
-     State(component_id = "residual_selected", component_property = "value")],
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value"),
+     Input(component_id = "mutfrom_selected", component_property = "value")],
     prevent_initial_call=True,
 )
-def update_dropdown_page1_2c(mutfrom_selected, gene_selected, residual_selected):
+def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected):
     dropdownlist = page1.set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected)
     return dropdownlist
 
@@ -61,13 +62,15 @@ def update_dropdown_page1_2c(mutfrom_selected, gene_selected, residual_selected)
     [Output(component_id = "gene_ddg", component_property = "figure"),
      Output(component_id = "variant_ddg", component_property = "figure"),
      Output(component_id = "gene_ddg_markdown", component_property = "children")],
-    [Input(component_id = "mutto_selected", component_property = "value")],
-    [State(component_id = "gene_selected", component_property = "value"),
-     State(component_id = "residual_selected", component_property = "value"),
-     State(component_id = "mutfrom_selected", component_property = "value")],
+    [Input(component_id = "gene_selected", component_property = "value"),
+     Input(component_id = "residual_selected", component_property = "value"),
+     Input(component_id = "mutfrom_selected", component_property = "value"),
+     Input(component_id = "mutto_selected", component_property = "value")],
     prevent_initial_call=True,
 )
-def update_graphs_and_markdown(mutto_selected, gene_selected, residual_selected, mutfrom_selected):
+def update_graphs_and_markdown(gene_selected, residual_selected, mutfrom_selected, mutto_selected):
+    if None in {mutto_selected, gene_selected, residual_selected, mutfrom_selected}:
+        return [go.Figure(), go.Figure(), ""]
     gene_pdbs = page1.gene_pdbs
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
