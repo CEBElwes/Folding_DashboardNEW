@@ -2,7 +2,7 @@
 
 # Import necessary libraries
 from dash import html, dcc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 # Connect to main app.py file
 from app import app
@@ -25,110 +25,71 @@ app.layout = html.Div([
     html.Div(id='page-content', children=[]),
 ])
 
-## CALLBACKS FOR PAGE 1
-
-# Callback to load the appropriate ddg_info file based on gene selection
-@app.callback(
-    Output('ddg_info_store', 'data'),
-    Input('gene_selected', 'value')
-)
-
-def update_ddg_info(gene_selected):
-    ddg_info = page1.load_ddg_info(gene_selected)
-    return ddg_info
-
-## Callbacks for dropdowns
-
 @app.callback(
     Output(component_id = "residual_selected", component_property = "options"),
-    [Input(component_id = "gene_selected", component_property = "value")]
+    Input('gene_selected', 'value'),
+    prevent_initial_call=True,
 )
-
 def update_dropdown_page1_2a(gene_selected):
+    print("main.update_dropdown_page1_2a")
     dropdownlist = page1.set_dropdown_options_page1_2a(gene_selected)
     return dropdownlist
 
 @app.callback(
     Output(component_id = "mutfrom_selected", component_property = "options"),
-    [Input(component_id = "gene_selected", component_property = "value"),
-     Input(component_id = "residual_selected", component_property = "value")]
+    [Input(component_id = "residual_selected", component_property = "value")],
+    [State(component_id = "gene_selected", component_property = "value")],
+    prevent_initial_call=True,
 )
-
-def update_dropdown_page1_2b(gene_selected, residual_selected):
+def update_dropdown_page1_2b(residual_selected, gene_selected):
+    print("main.update_dropdown_page1_2b")
+    print(f"{gene_selected=}, {residual_selected}")
     dropdownlist = page1.set_dropdown_options_page1_2b(gene_selected, residual_selected)
+    print(f"{dropdownlist=}")
     return dropdownlist
-   
+
 
 @app.callback(
     Output(component_id = "mutto_selected", component_property = "options"),
-    [Input(component_id = "gene_selected", component_property = "value"),
-     Input(component_id = "residual_selected", component_property = "value"),
-     Input(component_id = "mutfrom_selected", component_property = "value")]
-)  
-
-def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected):
+    [Input(component_id = "mutfrom_selected", component_property = "value")],
+    [State(component_id = "gene_selected", component_property = "value"),
+     State(component_id = "residual_selected", component_property = "value")],
+    prevent_initial_call=True,
+)
+def update_dropdown_page1_2c(mutfrom_selected, gene_selected, residual_selected):
+    print("main.update_dropdown_page1_2c")
     dropdownlist = page1.set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected)
     return dropdownlist
 
-@app.callback(
-    Output(component_id = "gene_ddg", component_property = "figure"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
-     Input(component_id = "pdb_values", component_property = "value"),
-     Input(component_id = "residual_selected", component_property = "value"),
-     Input(component_id = "mutfrom_selected", component_property = "value"),
-     Input(component_id = "mutto_selected", component_property = "value"),]
-)
-def update_graph1(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page1.gene_pdbs  
-    pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page1.calculate_median(ddg_info_store, pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    figure = page1.ddg_for_gene_plot(ddg_info_store, pdb_values, median_ddg)
-    return figure
 
-## Callback for ddg by variant
 @app.callback(
-    Output(component_id = "variant_ddg", component_property = "figure"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
-     Input(component_id = "pdb_values", component_property = "value"),
-     Input(component_id = "residual_selected", component_property = "value"),
-     Input(component_id = "mutfrom_selected", component_property = "value"),
-     Input(component_id = "mutto_selected", component_property = "value"),]
+    [Output(component_id = "gene_ddg", component_property = "figure"),
+     Output(component_id = "variant_ddg", component_property = "figure"),
+     Output(component_id = "gene_ddg_markdown", component_property = "children")],
+    [Input(component_id = "mutto_selected", component_property = "value")],
+    [State(component_id = "gene_selected", component_property = "value"),
+     State(component_id = "residual_selected", component_property = "value"),
+     State(component_id = "mutfrom_selected", component_property = "value")],
+    prevent_initial_call=True,
 )
-def update_graph2(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    gene_pdbs = page1.gene_pdbs  
+def update_graphs_and_markdown(mutto_selected, gene_selected, residual_selected, mutfrom_selected):
+    print("main.update_graphs_and_markdown")
+    gene_pdbs = page1.gene_pdbs
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    figure = page1.ddg_for_variant_plot(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
-    return figure
+    median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
 
-##Callback for markdown text
-@app.callback(
-    Output(component_id = "gene_ddg_markdown", component_property = "children"),
-    [Input(component_id = "ddg_info_store", component_property = "data"),
-     Input(component_id = "gene_selected", component_property = "value"),
-     Input(component_id = "pdb_values", component_property = "value"),
-     Input(component_id = "residual_selected", component_property = "value"),
-     Input(component_id = "mutfrom_selected", component_property = "value"),
-     Input(component_id = "mutto_selected", component_property = "value"),
-     Input(component_id = "median_ddg", component_property = "value"),
-     Input(component_id = "percentile", component_property = "value"),]
-)
-
-def update_markdown(ddg_info_store, gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected, median_ddg, percentile):
-    gene_pdbs = page1.gene_pdbs  
-    pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
-    median_ddg = page1.calculate_median(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page1.calculate_percentile(ddg_info_store, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    gene_figure = page1.ddg_for_gene_plot(gene_selected, pdb_values, median_ddg)
+    variant_figure = page1.ddg_for_variant_plot(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
     text = page1.gene_ddg_markdown_text(median_ddg, percentile)
-    return text
 
-
+    return [gene_figure, variant_figure, text]
 
 
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
+    print("main.display_page")
     if pathname == '/' or pathname == '/page1':
         return page1.layout
     else:  # if redirected to unknown link
@@ -136,4 +97,4 @@ def display_page(pathname):
 
 # Run the app on localhost:8050
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0', port=80)
+    app.run_server(debug=False, host='localhost', port=8050)
