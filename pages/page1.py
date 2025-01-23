@@ -81,7 +81,6 @@ layout = html.Div(children=[
 
 
 def set_dropdown_options_page1_2a(gene_selected):
-    print("page1.set_dropdown_options_page1_2a")
     if gene_selected:
         pdb_residual_values = pdb_residual[gene_selected].dropna().astype(int).tolist()
         return [{'label': str(residual), 'value': residual} for residual in pdb_residual_values]
@@ -89,7 +88,6 @@ def set_dropdown_options_page1_2a(gene_selected):
 
 
 def set_dropdown_options_page1_2b(gene_selected,residual_selected):
-    print("page1.set_dropdown_options_page1_2b")
     if gene_selected and residual_selected:
         column = f"{gene_selected}-{residual_selected}"
         mutfrom_values = mutfrom_options[column].dropna().tolist()
@@ -98,7 +96,6 @@ def set_dropdown_options_page1_2b(gene_selected,residual_selected):
         
 
 def set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected):
-    print("page1.set_dropdown_options_page1_2c")
     if gene_selected and residual_selected and mutfrom_selected:
         column = f"{gene_selected}-{residual_selected}-{mutfrom_selected}"
         mutto_values = mutto_options[column].dropna().tolist()
@@ -107,7 +104,6 @@ def set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_sele
 
 
 def get_pdb_values(gene_pdbs, gene_selected):
-    print("page1.get_pdb_values")
     filtered_gene_pdbs = gene_pdbs[gene_pdbs['name_of_gene'] == gene_selected]
     pdb_values = filtered_gene_pdbs['pdb'].unique().tolist()
     return pdb_values
@@ -130,7 +126,6 @@ def calculate_median(pdb_values, residual_selected, mutfrom_selected, mutto_sele
     return median_ddg
 
 def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
-    print('page1.ddg_for_gene_plot')
     if gene_selected is None:
         return go.Figure()
 

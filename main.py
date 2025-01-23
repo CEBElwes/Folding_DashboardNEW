@@ -31,7 +31,6 @@ app.layout = html.Div([
     prevent_initial_call=True,
 )
 def update_dropdown_page1_2a(gene_selected):
-    print("main.update_dropdown_page1_2a")
     dropdownlist = page1.set_dropdown_options_page1_2a(gene_selected)
     return dropdownlist
 
@@ -42,10 +41,7 @@ def update_dropdown_page1_2a(gene_selected):
     prevent_initial_call=True,
 )
 def update_dropdown_page1_2b(residual_selected, gene_selected):
-    print("main.update_dropdown_page1_2b")
-    print(f"{gene_selected=}, {residual_selected}")
     dropdownlist = page1.set_dropdown_options_page1_2b(gene_selected, residual_selected)
-    print(f"{dropdownlist=}")
     return dropdownlist
 
 
@@ -57,7 +53,6 @@ def update_dropdown_page1_2b(residual_selected, gene_selected):
     prevent_initial_call=True,
 )
 def update_dropdown_page1_2c(mutfrom_selected, gene_selected, residual_selected):
-    print("main.update_dropdown_page1_2c")
     dropdownlist = page1.set_dropdown_options_page1_2c(gene_selected, residual_selected, mutfrom_selected)
     return dropdownlist
 
@@ -73,7 +68,6 @@ def update_dropdown_page1_2c(mutfrom_selected, gene_selected, residual_selected)
     prevent_initial_call=True,
 )
 def update_graphs_and_markdown(mutto_selected, gene_selected, residual_selected, mutfrom_selected):
-    print("main.update_graphs_and_markdown")
     gene_pdbs = page1.gene_pdbs
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
@@ -89,7 +83,6 @@ def update_graphs_and_markdown(mutto_selected, gene_selected, residual_selected,
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    print("main.display_page")
     if pathname == '/' or pathname == '/page1':
         return page1.layout
     else:  # if redirected to unknown link
