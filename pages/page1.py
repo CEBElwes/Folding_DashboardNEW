@@ -17,64 +17,98 @@ mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv", dtype=str)
 duckdb_con = duckdb.connect('ddg_info/ddg_info.db', read_only=True)
 
 # Layout
-layout = html.Div(children=[
+layout = dbc.Container([
     html.Br(),
-    html.H1(children='Folding Energies'),
+    html.H1('Folding Energies', className='text-center'),
+    html.Div(
+        'Use the dropdowns below to select the gene and describe a variant.',
+        className='text-center mb-4',
+    ),
 
-    html.Div(children=f'''
-        Use the dropdowns below to select the gene and describe a variant.
-    '''),
+    # Dropdowns
+    dbc.Row([
+        dbc.Col([
+            html.Div("Gene: "),
+            dcc.Dropdown(
+                options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique()],
+                id="gene_selected",
+                searchable=True,
+                placeholder="Select a gene...",
+                clearable=True
+            ),
+        ], width=3, className='mb-4'),
 
-    # Flex container for histograms
-    html.Div([
-        html.Div([
-            html.Div([
-                "Gene: ",
-                dcc.Dropdown(
-                    options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique()],
-                    id="gene_selected",
-                    searchable=True,
-                    placeholder="Select a gene...",
-                    clearable=True
-                ),
-            ], style={'padding': 5}),
+        dbc.Col([
+            html.Div("Residual: "),
+            dcc.Dropdown(
+                id="residual_selected",
+                searchable=True,
+                placeholder="Select a residual...",
+                clearable=True
+            ),
+        ], width=3, className='mb-4'),
+
+        dbc.Col([
+            html.Div("Mutation From: "),
+            dcc.Dropdown(
+                id="mutfrom_selected",
+                searchable=True,
+                placeholder="Select mutation from...",
+                clearable=True
+            ),
+        ], width=3, className='mb-4'),
+
+        dbc.Col([
+            html.Div("Mutation To: "),
+            dcc.Dropdown(
+                id="mutto_selected",
+                searchable=True,
+                placeholder="Select mutation to...",
+                clearable=True
+            ),
+        ], width=3, className='mb-4'),
+    ]),
+
+    # Graphs
+    dbc.Row([
+        dbc.Col([
             dcc.Loading(
                 id="loading-gene-ddg",
                 type="default",
                 children=dcc.Graph(id="gene_ddg"),
+                delay_show=200,
+                delay_hide=100,
+                show_initially=False,
             ),
-        ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
+        ], width=6, className='mb-4'),
 
-        html.Div([
-            html.Div([
-                html.Div([
-                    "Residue number: ",
-                    dcc.Dropdown(id="residual_selected", searchable=True, placeholder="Select residue number...", clearable=True),
-                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
-                html.Div([
-                    "Mutation from: ",
-                    dcc.Dropdown(id="mutfrom_selected", searchable=True, placeholder="Select mutation from...", clearable=True),
-                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
-                html.Div([
-                    "Mutation to: ",
-                    dcc.Dropdown(id="mutto_selected", searchable=True, placeholder="Select mutation to...", clearable=True),
-                ], style={'width': '32%', 'display': 'inline-block', 'padding': 5}),
-            ], style={'display': 'flex', 'justify-content': 'space-between', 'width': '100%'}),
+        dbc.Col([
             dcc.Loading(
-                id="loading_variant_ddg",
+                id="loading-variant-ddg",
                 type="default",
                 children=dcc.Graph(id="variant_ddg"),
+                delay_show=200,
+                delay_hide=100,
+                show_initially=False,
             ),
-        ], style={'width': '49%', 'display': 'inline-block', 'padding': 10}),
-    ], style={'display': 'flex', 'justify-content': 'space-between'}),
-    # Full width Markdown text
-    html.Div([
-        dcc.Markdown(
-            id='gene_ddg_markdown',
-            style={'width': '100%', 'white-space': 'pre-line', 'padding': '10px', 'box-sizing': 'border-box'}
-        ),
-    ], style={'padding': 10}),
-])
+        ], width=6, className='mb-4'),
+    ]),
+
+    # Text
+    dbc.Row([
+        dbc.Col([
+            dcc.Markdown(
+                id='gene_ddg_markdown',
+                style={
+                    'width': '100%',
+                    'white-space': 'pre-line',
+                    'padding': '10px',
+                    'box-sizing': 'border-box',
+                    },
+                ),
+        ], width=12, className='mb-4'),
+    ]),
+], fluid=True)
 
 
 def set_dropdown_options_page1_2a(gene_selected):
@@ -123,9 +157,6 @@ def calculate_median(pdb_values, residual_selected, mutfrom_selected, mutto_sele
     return median_ddg
 
 def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
-    if gene_selected is None:
-        return go.Figure()
-
     pdb_values_str = ', '.join(f"'{pdb}'" for pdb in pdb_values)
     query = f"""
         SELECT *
@@ -134,9 +165,16 @@ def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
     """
     filtered_ddg_info = duckdb_con.execute(query).fetchdf()
 
-    figure = px.histogram(filtered_ddg_info, x='ddg', range_x=[-10, 100], nbins=1000, 
-                         title='Histogram of ΔΔG values for selected gene', 
-                         labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(
+        filtered_ddg_info,
+        x='ddg',
+        range_x=[-10, 100],
+        nbins=1000, 
+        title=f'Histogram of ΔΔG values for {gene_selected}', 
+        labels={'ddg': 'ΔΔG (kcal/mol)'},
+        template="plotly_white",
+    )
+    figure.update_yaxes(showticklabels=False, title="Frequency")
 
     if median_ddg is not None:
         figure.add_shape(
@@ -168,10 +206,7 @@ def ddg_for_gene_plot(gene_selected, pdb_values, median_ddg):
 
     return figure
 
-def ddg_for_variant_plot(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    if gene_selected is None:
-        return go.Figure()
-
+def ddg_for_variant_plot(pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     pdb_values_str = ', '.join(f"'{pdb}'" for pdb in pdb_values)
     query = f"""
         SELECT *
@@ -184,15 +219,20 @@ def ddg_for_variant_plot(gene_selected, pdb_values, residual_selected, mutfrom_s
     filtered_ddg_info_var3 = duckdb_con.execute(query).fetchdf()
 
     # Create the histogram
-    figure = px.histogram(filtered_ddg_info_var3, x='ddg', range_x=[-10, 100], nbins=20, title='Histogram of ΔΔG values for selected variant', labels={'ddg': 'ΔΔG (kcal/mol)', 'count': 'Frequency'})
+    figure = px.histogram(
+        filtered_ddg_info_var3, x='ddg',
+        range_x=[-10, 100],
+        nbins=20,
+        title='Histogram of ΔΔG values for selected variant',
+        labels={'ddg': 'ΔΔG (kcal/mol)'},
+        template="plotly_white",
+    )
+    figure.update_yaxes(showticklabels=False, title="Frequency")
     return figure
 
 
 ##Callback for markdown text
-def calculate_percentile(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected):
-    if gene_selected is None:
-        return None
-
+def calculate_percentile(pdb_values, residual_selected, mutfrom_selected, mutto_selected):
     pdb_values_str = ', '.join(f"'{pdb}'" for pdb in pdb_values)
     query_all = f"""
         SELECT ddg

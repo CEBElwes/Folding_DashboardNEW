@@ -2,8 +2,8 @@ import os
 
 # Import necessary libraries
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import plotly.graph_objects as go
+from dash.dependencies import Input, Output
+import plotly.express as px
 
 # Connect to main app.py file
 from app import app
@@ -13,6 +13,29 @@ from pages import page1
 
 # Connect the navbar to the index
 from components import navbar
+
+# Define default graphs so they appear consistent whether empty of with data plotted
+empty_gene_histogram = px.histogram(
+    [],
+    range_x=[-10, 100],
+    nbins=1000,
+    title=f'Histogram of ΔΔG values for selected gene',
+    template="plotly_white",
+)
+empty_gene_histogram.update_yaxes(showticklabels=False, title="Frequency")
+empty_gene_histogram.update_xaxes(showgrid=False, title="ΔΔG (kcal/mol)")
+
+empty_variant_histogram = px.histogram(
+    [],
+    range_x=[-10, 100],
+    nbins=20,
+    title='Histogram of ΔΔG values for selected variant',
+    labels={'x': 'ΔΔG (kcal/mol)', 'y': 'Frequency'},
+    template="plotly_white",
+)
+empty_variant_histogram.update_yaxes(showticklabels=False, title="Frequency")
+empty_variant_histogram.update_xaxes(showgrid=False, title="ΔΔG (kcal/mol)")
+
 
 # Define the navbar
 nav = navbar.Navbar()
@@ -67,18 +90,22 @@ def update_dropdown_page1_2c(gene_selected, residual_selected, mutfrom_selected)
      Input(component_id = "residual_selected", component_property = "value"),
      Input(component_id = "mutfrom_selected", component_property = "value"),
      Input(component_id = "mutto_selected", component_property = "value")],
-    prevent_initial_call=True,
 )
 def update_graphs_and_markdown(gene_selected, residual_selected, mutfrom_selected, mutto_selected):
     if None in {mutto_selected, gene_selected, residual_selected, mutfrom_selected}:
-        return [go.Figure(), go.Figure(), ""]
+        return [
+            empty_gene_histogram,
+            empty_variant_histogram,
+            "",
+        ]
+
     gene_pdbs = page1.gene_pdbs
     pdb_values = page1.get_pdb_values(gene_pdbs, gene_selected)
     median_ddg = page1.calculate_median(pdb_values,residual_selected, mutfrom_selected, mutto_selected)
-    percentile = page1.calculate_percentile(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    percentile = page1.calculate_percentile(pdb_values, residual_selected, mutfrom_selected, mutto_selected)
 
     gene_figure = page1.ddg_for_gene_plot(gene_selected, pdb_values, median_ddg)
-    variant_figure = page1.ddg_for_variant_plot(gene_selected, pdb_values, residual_selected, mutfrom_selected, mutto_selected)
+    variant_figure = page1.ddg_for_variant_plot(pdb_values, residual_selected, mutfrom_selected, mutto_selected)
     text = page1.gene_ddg_markdown_text(median_ddg, percentile)
 
     return [gene_figure, variant_figure, text]
