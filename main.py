@@ -1,4 +1,4 @@
-
+import os
 
 # Import necessary libraries
 from dash import html, dcc
@@ -17,7 +17,8 @@ from components import navbar
 # Define the navbar
 nav = navbar.Navbar()
 
-app.config.suppress_callback_exceptions = True
+# expose the server for gunicorn
+server = app.server
 
 # Define the index page layout
 app.layout = html.Div([
@@ -91,6 +92,9 @@ def display_page(pathname):
     else:  # if redirected to unknown link
         return "404 Page Error! Please choose a link"
 
-# Run the app on localhost:8050
+# Run the app on localhost:8050 by default
 if __name__ == '__main__':
-    app.run_server(debug=False, host='localhost', port=8050)
+    os.environ["host"]  = os.environ.get("host", default="localhost")
+    os.environ["port"] = os.environ.get("port", default="8050")
+    os.environ["dash_debug"] = os.environ.get("dash_debug", default="True")
+    app.run_server()
