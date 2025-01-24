@@ -1,18 +1,15 @@
-from dash import Dash, html, dcc
+import dash_bootstrap_components as dbc
+from dash import html, dcc
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import sqlite3 as sql
 import numpy as np
 
 import duckdb
 
-app = Dash(__name__)
-
 # Load static data files
 gene_pdbs = pd.read_csv("gene_pdbs")
 pdb_residual = pd.read_csv("pdb_residual")
-gene_names = pd.read_csv("gene_names_list.csv")  # This file contains gene-to-ddg_info filename mapping
 mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv", dtype=str)
 mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv", dtype=str)
 
@@ -24,7 +21,7 @@ layout = html.Div(children=[
     html.Br(),
     html.H1(children='Folding Energies'),
 
-    html.Div(children='''
+    html.Div(children=f'''
         Use the dropdowns below to select the gene and describe a variant.
     '''),
 
@@ -34,7 +31,7 @@ layout = html.Div(children=[
             html.Div([
                 "Gene: ",
                 dcc.Dropdown(
-                    options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique() if gene != 'gene_name_value'],
+                    options=[{'label': gene, 'value': gene} for gene in gene_pdbs['name_of_gene'].unique()],
                     id="gene_selected",
                     searchable=True,
                     placeholder="Select a gene...",
@@ -242,9 +239,3 @@ def gene_ddg_markdown_text(median_ddg, percentile):
                     f'The median ΔΔG for the selected variant is {median_ddg:.2f} kcal/mol and in the {percentile:.0f}th percentile. '
                     f'It is not destabilising.')
     return None
-        
-
-
-
-if __name__ == '__main__':
-    app.run_server(debug=True,port=8052)

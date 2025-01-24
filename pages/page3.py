@@ -1,16 +1,9 @@
 
 from dash import Dash, html, dcc, Output, Input
-import dash, dash_table
-from dash.exceptions import PreventUpdate
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import sqlite3 as sql
-from sqlite3 import Error
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib
-import seaborn as sns
 
 
 app = Dash(__name__)
