@@ -2905,6 +2905,3 @@ organism,name_of_gene,pdb,url,exp_method,exp_detail,length,coverage,gene_map,dum
 9606,AURKA,7ayi,https://www.ebi.ac.uk/pdbe/entry-files/download/pdb7ayi.ent,X-RAY DIFFRACTION,2.86,0,0.6253,{125-275:A125-275}{292-392:A292-392},
 9606,AURKA,7fic,https://www.ebi.ac.uk/pdbe/entry-files/download/pdb7fic.ent,X-RAY DIFFRACTION,2.32,0,0.5807,{127-278:A127-278}{310-391:A310-391},
 9606,AURKA,7o2v,https://www.ebi.ac.uk/pdbe/entry-files/download/pdb7o2v.ent,X-RAY DIFFRACTION,3.1,0,0.6551,{117-279:A117-279}{290-390:A290-390},
-organism_value,gene_name_value,pdb_value,url_value,exp_method_value,exp_detail_value,100,0.9,gene_map_value,dummy_value
-organism_value,gene_name_value,pdb_value,url_value,exp_method_value,exp_detail_value,100,0.9,gene_map_value,dummy_value
-organism_value,gene_name_value,pdb_value,url_value,exp_method_value,exp_detail_value,100,0.9,gene_map_value,dummy_value
