@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: folding-dashboard
+    env: docker
+    dockerfilePath: ./Dockerfile.prod
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: host
+        value: 0.0.0.0
+      - key: port
+        value: 10000
+      - key: dash_debug
+        value: False
