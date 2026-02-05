@@ -1,22 +1,23 @@
-FROM python:3.13
+FROM python:3.13-slim
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip --no-cache-dir
 # Create a directory where the code is to be hosted
 RUN mkdir /app
 # Define the working directory in the container
 WORKDIR /app
 # Copy and install the requirements.
 COPY requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 # Copy application code to the image
 COPY . /app/
 
 # Define environment variables
 ENV host=0.0.0.0
 ENV dash_debug=False
+ENV PYTHONUNBUFFERED=1
 
 # Render provides PORT env variable, default to 10000 for local testing
 ENV PORT=10000
 
-# Use the PORT environment variable that Render provides
-CMD gunicorn -b 0.0.0.0:$PORT --workers 2 --timeout 120 main:server
+# Use only 1 worker to minimize memory usage
+CMD gunicorn -b 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120 --max-requests 1000 --max-requests-jitter 100 main:server
