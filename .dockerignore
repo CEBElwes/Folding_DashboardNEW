@@ -1,0 +1,47 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.venv
+venv/
+env/
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+*.md
+LICENSE
+
+# CI/CD (not needed in container)
+.github
+.gitlab-ci.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+tests/
+test_*.py
+*_test.py
