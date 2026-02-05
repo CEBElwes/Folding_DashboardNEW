@@ -16,19 +16,10 @@ mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv", dtype=str)
 # Create in-memory DuckDB connection that queries CSVs directly
 duckdb_con = duckdb.connect(':memory:')
 
-# Create a view that queries all CSV files directly (no persistent database!)
+# SAMPLE VERSION - Using only 2 CSV files for testing
 csv_files = [
     'ddg_info/ddg_info1.csv',
     'ddg_info/ddg_info2.csv',
-    'ddg_info/ddg_info3.csv',
-    'ddg_info/ddg_info4.csv',
-    'ddg_info/ddg_info5.csv',
-    'ddg_info/ddg_info6.csv',
-    'ddg_info/ddg_info7.csv',
-    'ddg_info/ddg_info8.csv',
-    'ddg_info/ddg_info9a.csv',
-    'ddg_info/ddg_info9b.csv',
-    'ddg_info/ddg_info10.csv',
 ]
 
 # Create a view that unions all CSV files - DuckDB will read them on-demand
@@ -42,6 +33,12 @@ duckdb_con.execute("PRAGMA threads=1")
 # Layout
 layout = dbc.Container([
     html.Br(),
+    # Add banner to show this is sample data
+    dbc.Alert(
+        "⚠️ DEMO VERSION - This uses sample data (20% of full dataset) for testing. Full version coming soon!",
+        color="warning",
+        className="text-center mb-3"
+    ),
     html.H1('Folding Energies', className='text-center'),
     html.Div(
         'Use the dropdowns below to select the gene and describe a variant.',
