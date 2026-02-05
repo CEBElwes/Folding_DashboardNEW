@@ -13,8 +13,31 @@ pdb_residual = pd.read_csv("pdb_residual")
 mutfrom_options = pd.read_csv("dropdown_pdb_mut_from.csv", dtype=str)
 mutto_options = pd.read_csv("dropdown_pdb_mut_from_to.csv", dtype=str)
 
-# Load ddg info stored in DB
-duckdb_con = duckdb.connect('ddg_info/ddg_info.db', read_only=True)
+# Create in-memory DuckDB connection that queries CSVs directly
+duckdb_con = duckdb.connect(':memory:')
+
+# Create a view that queries all CSV files directly (no persistent database!)
+csv_files = [
+    'ddg_info/ddg_info1.csv',
+    'ddg_info/ddg_info2.csv',
+    'ddg_info/ddg_info3.csv',
+    'ddg_info/ddg_info4.csv',
+    'ddg_info/ddg_info5.csv',
+    'ddg_info/ddg_info6.csv',
+    'ddg_info/ddg_info7.csv',
+    'ddg_info/ddg_info8.csv',
+    'ddg_info/ddg_info9a.csv',
+    'ddg_info/ddg_info9b.csv',
+    'ddg_info/ddg_info10.csv',
+]
+
+# Create a view that unions all CSV files - DuckDB will read them on-demand
+union_query = " UNION ALL ".join([f"SELECT * FROM read_csv_auto('{csv}')" for csv in csv_files])
+duckdb_con.execute(f"CREATE VIEW ddg_info AS {union_query}")
+
+# Set memory limits to prevent OOM
+duckdb_con.execute("PRAGMA memory_limit='256MB'")
+duckdb_con.execute("PRAGMA threads=1")
 
 # Layout
 layout = dbc.Container([
